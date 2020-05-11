@@ -59,11 +59,11 @@ while(<>) {
         elsif   ($1 eq '[') { $right_bracket = ']' }
         elsif   ($1 eq '{') { $right_bracket = '}' }
 
-        if(/\$$left_bracket([^$right_bracket]+?)$right_bracket/) {
-            
+        if(/\$$left_bracket\s*$assign\s*$right_bracket/) {
+            my $assignment = $1;
+            print $assignment;
         }
     }
 
-}
 
-print $declarations;
+}
