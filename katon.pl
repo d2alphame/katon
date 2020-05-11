@@ -12,6 +12,7 @@ use v5.26;          # Use Perl of at least this version
 # Open a file handle to a temporary, anonymous file
 open(my $tmp, "+>", undef) or die "Could not create temporary file";
 
+my $declarations = "";                                  # Save declarations here as we find them
 my $var = qr/[a-zA-Z_][a-zA-Z0-9_]*/;                   # Regex for recognizing variable names
 
 
@@ -22,13 +23,13 @@ while(<>) {
     # $x = 'My val' or 
     # $x = `My val`
     if(/^\s*(\$$var)\s*=\s*(['`])([^\2]+?)\2\s*$/) {
-        say "my $1 = qq$2$3$2;";
+        $declarations .= "my $1 = qq$2$3$2;\n";
         next;
     }
     # Match assigning with double-quotes character
     # Matches e.g. $x = "My Value"
     elsif(/^\s*(\$$var)\s*=\s*["]([^"]+?)"\s*$/) {
-        say qq(my $1 = "$2";);
+        $declarations .= qq(my $1 = "$2";\n);
         next;
     }
 
@@ -38,9 +39,11 @@ while(<>) {
     if(/^\s*```\s*$/) {
        while(<>) {
            last if /^\s*```\s*$/;
-           print;
+           $declarations .= $_;
        }
 
     }
 
 }
+
+print $declarations;
