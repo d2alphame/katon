@@ -12,9 +12,8 @@ use v5.26;          # Use Perl of at least this version
 # Open a file handle to a temporary, anonymous file
 open(my $tmp, "+>", undef) or die "Could not create temporary file";
 
-
 my $var = qr/[a-zA-Z_][a-zA-Z0-9_]*/;                   # Regex for recognizing variable names
-# my $quote = qr/"|'|`/;                                  # Regex for recognizing any of the 3 quoting characters
+
 
 # Read all lines from all files passed as arguments from the command line
 while(<>) {
@@ -27,9 +26,21 @@ while(<>) {
         next;
     }
     # Match assigning with double-quotes character
-    elsif(/^\s*(\$$var)\s*=\s*["]([^"]+?)"/) {
+    # Matches e.g. $x = "My Value"
+    elsif(/^\s*(\$$var)\s*=\s*["]([^"]+?)"\s*$/) {
         say qq(my $1 = "$2";);
-        next 
+        next;
+    }
+
+
+    # Match for code-fence. Code fences are blocks of
+    # actual Perl code
+    if(/^\s*```\s*$/) {
+       while(<>) {
+           last if /^\s*```\s*$/;
+           print;
+       }
+
     }
 
 }
