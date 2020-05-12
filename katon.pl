@@ -14,8 +14,23 @@ open(my $tmp, "+>", undef) or die "Could not create temporary file";
 
 my $declarations = "";                                  # Save declarations here as we find them
 my $code_blocks = "";                                   # Save code blocks here.
+
 my $var = qr/[a-zA-Z_][a-zA-Z0-9_]*/;                   # Regex for recognizing variable names
-my $assign = qr/$var\s*=\s*(['"`]).+?\1/;               # Match assigning values
+
+my $quot_assign = qr/$var\s*=\s*"[^"]+?"/;              # Match assignment with quotes
+my $apos_assign = qr/$var\s*=\s*'[^']+?'/;              # Match assignment with apostrophe
+my $tick_assign = qr/$var\s*=\s*`[^`]+?`/;              # Match assignment with ticks
+
+# Match any of the 3 quote assignments
+my $any_quote_assign = qr/$quot_assign|$apos_assign|$tick_assign/;
+
+my $brace_assign = qr/\$\{\s*$any_quote_assign\s*\}/;   # Match assignment with braces
+my $squar_assign = qr/\$\[\s*$any_quote_assign\s*\]/;   # Match assignment with square brackets
+my $angle_assign = qr/\$<\s*$any_quote_assign\s*>/;     # Match assignment with angular brackets
+my $paren_assign = qr/\$\(\s*$any_quote_assign\s*\)/;   # Match assignment with parentheses
+
+# Match any of the 4 bracket assignments
+my $bracket_assign = qr/$brace_assign|$squar_assign|$angle_assign|$paren_assign/;
 
 
 # Read all lines from all files passed as arguments from the command line
@@ -47,23 +62,21 @@ while(<>) {
     }
 
 
-    # Match declare-and-assign inside a body of text
-    # This is done with $(...), $<...>, $[...], ${...}
-    # Any of the 4 brackets can be used and the assignment
-    # goes between them
-    if(/\$([\({<\[])/) {
-        my $left_bracket = $1;
-        my $right_bracket;
-        if      ($1 eq '(') { $right_bracket = ')' }
-        elsif   ($1 eq '<') { $right_bracket = '>' }
-        elsif   ($1 eq '[') { $right_bracket = ']' }
-        elsif   ($1 eq '{') { $right_bracket = '}' }
-
-        if(/\$$left_bracket\s*$assign\s*$right_bracket/) {
-            my $assignment = $1;
-            print $assignment;
-        }
+    if(/($bracket_assign)/) {
+        print;
     }
 
+
+}
+
+
+# Sub routine for matching a variable name
+sub match_var_name {
+
+}
+
+
+# Sub routine for matching declare-assign
+sub match_declare_assign {
 
 }
