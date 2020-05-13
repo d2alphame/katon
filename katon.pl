@@ -12,25 +12,27 @@ use v5.26;          # Use Perl of at least this version
 # Open a file handle to a temporary, anonymous file
 open(my $tmp, "+>", undef) or die "Could not create temporary file";
 
-my $declarations = "";                                  # Save declarations here as we find them
-my $code_blocks = "";                                   # Save code blocks here.
+my $declarations = "";                                      # Save declarations here as we find them
+my $code_blocks = "";                                       # Save code blocks here.
 
-my $var = qr/[a-zA-Z_][a-zA-Z0-9_]*/;                   # Regex for recognizing variable names
+my $var = qr/[a-zA-Z_][a-zA-Z0-9_]*/;                       # Regex for recognizing variable names
 
-my $quot_assign = qr/$var\s*=\s*"[^"]+?"/;              # Match assignment with quotes
-my $apos_assign = qr/$var\s*=\s*'[^']+?'/;              # Match assignment with apostrophe
-my $tick_assign = qr/$var\s*=\s*`[^`]+?`/;              # Match assignment with ticks
+# my $apos_assign = qr/($var)\s*=\s*(')([^']+?)'/;          # Match assignment with apostrophe
+# my $tick_assign = qr/($var)\s*=\s*(`)([^`]+?)`/;          # Match assignment with ticks
+# my $quot_assign = qr/($var)\s*=\s*(")([^"]+?)"/;          # Match assignment with quotes
+
+my $assignment = qr/($var)\s*=\s*(["'`])([^\2]+?)\2/;       # Match assignment with of the 3 allowed quotes
 
 # Match any of the 3 quote assignments
-my $any_quote_assign = qr/$quot_assign|$apos_assign|$tick_assign/;
+# my $any_quote_assign = qr/$quot_assign|$apos_assign|$tick_assign/;
 
-my $brace_assign = qr/\$\{\s*$any_quote_assign\s*\}/;   # Match assignment with braces
-my $squar_assign = qr/\$\[\s*$any_quote_assign\s*\]/;   # Match assignment with square brackets
-my $angle_assign = qr/\$<\s*$any_quote_assign\s*>/;     # Match assignment with angular brackets
-my $paren_assign = qr/\$\(\s*$any_quote_assign\s*\)/;   # Match assignment with parentheses
+my $brace_assign = qr/\$\{\s*$assignment\s*\}/;             # Match assignment with braces
+my $squar_assign = qr/\$\[\s*$assignment\s*\]/;             # Match assignment with square brackets
+my $paren_assign = qr/\$\(\s*$assignment\s*\)/;             # Match assignment with parentheses
+my $angle_assign = qr/\$<\s*$assignment\s*>/;               # Match assignment with angular brackets
 
 # Match any of the 4 bracket assignments
-my $bracket_assign = qr/$brace_assign|$squar_assign|$angle_assign|$paren_assign/;
+# my $bracket_assign = qr/$angle_assign|$paren_assign|$brace_assign|$squar_assign/;
 
 
 # Read all lines from all files passed as arguments from the command line
@@ -56,27 +58,39 @@ while(<>) {
     if(/^\s*```\s*$/) {
         while(<>) {
            last if /^\s*```\s*$/;
-           $declarations .= $_;
+           # $declarations .= $_;
         }
         next;
     }
 
+    
+    # Match all 4 types of bracketed assignments
+    # These are done thus:
+    # $<...>, $(...), $[...], ${...}
+    while(/\$(?=(\{|\[|\(|<))/g) {
+        if($1 eq '<') {
+            if(/<\s*$assignment\s*>/g) {
+                $declarations .= "my \$$1 = qq$2$3$2;\n";
+            }
+        }
+        elsif($1 eq '{') {
+            if(/\{\s*$assignment\s*\}/g) {
+                $declarations .= "my \$$1 = qq$2$3$2;\n";
+            }
+        }
+        elsif($1 eq '(') {
+            if(/\(\s*$assignment\s*\)/g) {
+                $declarations .= "my \$$1 = qq$2$3$2;\n";
+            }
+        }
+        elsif($1 eq '[') {
+            if(/\[\s*$assignment\s*\]/g) {
+                $declarations .= "my \$$1 = qq$2$3$2;\n";
+            }
+        }
 
-    if(/($bracket_assign)/) {
-        print;
     }
 
-
 }
 
-
-# Sub routine for matching a variable name
-sub match_var_name {
-
-}
-
-
-# Sub routine for matching declare-assign
-sub match_declare_assign {
-
-}
+say $declarations;
