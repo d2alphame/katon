@@ -16,39 +16,16 @@ my $declarations = "";                                      # Save declarations 
 my $code_blocks = "";                                       # Save code blocks here.
 
 my $var = qr/[a-zA-Z_][a-zA-Z0-9_]*/;                       # Regex for recognizing variable names
-
-# my $apos_assign = qr/($var)\s*=\s*(')([^']+?)'/;          # Match assignment with apostrophe
-# my $tick_assign = qr/($var)\s*=\s*(`)([^`]+?)`/;          # Match assignment with ticks
-# my $quot_assign = qr/($var)\s*=\s*(")([^"]+?)"/;          # Match assignment with quotes
-
 my $assignment = qr/($var)\s*=\s*(["'`])([^\2]+?)\2/;       # Match assignment with of the 3 allowed quotes
-
-# Match any of the 3 quote assignments
-# my $any_quote_assign = qr/$quot_assign|$apos_assign|$tick_assign/;
-
-my $brace_assign = qr/\$\{\s*$assignment\s*\}/;             # Match assignment with braces
-my $squar_assign = qr/\$\[\s*$assignment\s*\]/;             # Match assignment with square brackets
-my $paren_assign = qr/\$\(\s*$assignment\s*\)/;             # Match assignment with parentheses
-my $angle_assign = qr/\$<\s*$assignment\s*>/;               # Match assignment with angular brackets
-
-# Match any of the 4 bracket assignments
-# my $bracket_assign = qr/$angle_assign|$paren_assign|$brace_assign|$squar_assign/;
 
 
 # Read all lines from all files passed as arguments from the command line
 while(<>) {
 
-    # Match, for example:
-    # x = 'My val' or 
-    # x = `My val`
-    if(/^\s*($var)\s*=\s*(['`])([^\2]+?)\2\s*$/) {
-        $declarations .= 'my $' . "$1 = qq$2$3$2;\n";
-        next;
-    }
-    # Match assigning with double-quotes character
-    # Matches e.g. $x = "My Value"
-    elsif(/^\s*($var)\s*=\s*["]([^"]+?)"\s*$/) {
-        $declarations .= 'my $' . qq($1 = "$2";\n);
+
+    # Match of the 3 versions of assignment (in declaration)
+    if(/^\s*$assignment\s*$/) {
+        $declarations .= "my \$$1 = qq$2$3$2;\n";
         next;
     }
 
@@ -58,7 +35,6 @@ while(<>) {
     if(/^\s*```\s*$/) {
         while(<>) {
            last if /^\s*```\s*$/;
-           # $declarations .= $_;
         }
         next;
     }
@@ -69,22 +45,22 @@ while(<>) {
     # $<...>, $(...), $[...], ${...}
     while(/\$(?=(\{|\[|\(|<))/g) {
         if($1 eq '<') {
-            if(/<\s*$assignment\s*>/g) {
+            if(s/<\s*$assignment\s*>/$1/g) {
                 $declarations .= "my \$$1 = qq$2$3$2;\n";
             }
         }
         elsif($1 eq '{') {
-            if(/\{\s*$assignment\s*\}/g) {
+            if(s/\{\s*$assignment\s*\}/$1/g) {
                 $declarations .= "my \$$1 = qq$2$3$2;\n";
             }
         }
         elsif($1 eq '(') {
-            if(/\(\s*$assignment\s*\)/g) {
+            if(s/\(\s*$assignment\s*\)/$1/g) {
                 $declarations .= "my \$$1 = qq$2$3$2;\n";
             }
         }
         elsif($1 eq '[') {
-            if(/\[\s*$assignment\s*\]/g) {
+            if(s/\[\s*$assignment\s*\]/$1/g) {
                 $declarations .= "my \$$1 = qq$2$3$2;\n";
             }
         }
@@ -93,4 +69,4 @@ while(<>) {
 
 }
 
-say $declarations;
+print $declarations;
