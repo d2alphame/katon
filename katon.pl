@@ -40,33 +40,47 @@ while(<>) {
     }
 
     
-    # Match all 4 types of bracketed assignments
-    # These are done thus:
-    # $<...>, $(...), $[...], ${...}
-    while(/\$(?=(\{|\[|\(|<))/g) {
-        if($1 eq '<') {
-            if(s/<\s*$assignment\s*>/$1/g) {
-                $declarations .= "my \$$1 = qq$2$3$2;\n";
-            }
+
+    {
+        # Match all 4 types of bracketed assignments
+        # These are done thus:
+        # $<...>, $(...), $[...], ${...}
+        if(s/\$\{\s*$assignment\s*\}/\$$1/gc) {
+            $declarations .= "my \$$1 = qq$2$3$2;\n";
+            redo;
         }
-        elsif($1 eq '{') {
-            if(s/\{\s*$assignment\s*\}/$1/g) {
-                $declarations .= "my \$$1 = qq$2$3$2;\n";
-            }
+        if(s/\$\[\s*$assignment\s*\]/\$$1/gc) {
+            $declarations .= "my \$$1 = qq$2$3$2;\n";
+            redo;
         }
-        elsif($1 eq '(') {
-            if(s/\(\s*$assignment\s*\)/$1/g) {
-                $declarations .= "my \$$1 = qq$2$3$2;\n";
-            }
+        if(s/\$\(\s*$assignment\s*\)/\$$1/gc) {
+            $declarations .= "my \$$1 = qq$2$3$2;\n";
+            redo;
         }
-        elsif($1 eq '[') {
-            if(s/\[\s*$assignment\s*\]/$1/g) {
-                $declarations .= "my \$$1 = qq$2$3$2;\n";
-            }
+        if(s/\$<\s*$assignment\s*>/\$$1/gc) {
+            $declarations .= "my \$$1 = qq$2$3$2;\n";
+            redo;
         }
 
+        # Match evaluating Perl code.
+        # Evaluating code can be done with one of the following
+        # %(...), %{...}, %(...), %[...] The perl code
+        # goes between the brackets.
+        if(s/%\{([^\}]+?)\}/eval $1/egc) {
+            redo;
+        }
+        if(s/%\[([^\]]+?)\]/eval $1/egc) {
+            redo;
+        }
+        if(s/%\(([^\)]+?)\)/eval $1/egc) {
+            redo;
+        }
+        if(s/%<([^>]+?)>/eval $1/egc) {
+            redo;
+        }
     }
 
+    print;
 }
 
 print $declarations;
