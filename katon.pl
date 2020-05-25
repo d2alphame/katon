@@ -38,6 +38,15 @@ while(<>) {
     }
 
 
+    # Match blocks of raw text
+    if(/^\s*'''\s*$/) {
+        while(<>) {
+            last if /^\s*'''\s*$/;
+            print;
+        }
+        next;
+    } 
+
     # Match dollar-substitution for place holders
     s/\$($var)/$placeholders{$1}/g;
 
