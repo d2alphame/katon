@@ -7,12 +7,13 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
+my $help = 0;
+
 unless (@ARGV) { 
     say "Katon text replacement macroprocessor";
     exit 0;
 }
 
-my $help = 0;
 GetOptions(
     'help|h' => \$help
 ) or pod2usage(2);
