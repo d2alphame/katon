@@ -23,7 +23,11 @@ unless (@ARGV) {
     exit 0;
 }
 
-my $input_file = $ARGV[0];
+# Take whatever is left as input file(s)
+for my $infile(@ARGV) {
+    exit 1  unless -e $infile;
+    die "File '$infile' does not exist.\n" unless(-e $infile); 
+}
 
 
 __END__

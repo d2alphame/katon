@@ -11,8 +11,9 @@ my $temp_dir = "/tmp/katon";
 my $temp_test_dir = "$temp_dir/test";
 
 
-# Takes a hash of filename => content pairs and creates those files in
-# $temp_test_dir
+
+# Takes a list of filename => content pairs and creates those files in
+# $temp_test_dir. Returns the directory the files were created in.
 sub create_files {
     my (%files) = @_;
     while (my ($filename, $content) = each %files) {
@@ -21,7 +22,9 @@ sub create_files {
         print $fh $content;
         close $fh;
     }
+    return $temp_test_dir;
 }
+
 
 
 # Confirms the content of a file matches the expected content
@@ -33,6 +36,7 @@ sub confirm_content {
     return 1 if $content eq $expected;
     return 0;   
 }
+
 
 
 sub import {
