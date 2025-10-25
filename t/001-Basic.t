@@ -39,8 +39,6 @@ unless (-d $temp_test_dir) {
     ok $out, 'Has output when -h is given';
 }
 
-# Test that katon can behave like the 'envsubst' command at it's simplest.
-
 done_testing;
 
 

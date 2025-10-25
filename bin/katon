@@ -4,3 +4,25 @@ use v5.34;
 use strict;
 use warnings;
 
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
+use Pod::Usage;
+
+unless (@ARGV) { 
+    say "Katon text replacement macroprocessor";
+    exit 0;
+}
+
+my $help = 0;
+GetOptions(
+    'help|h' => \$help
+) or pod2usage(2);
+pod2usage(-verbose => 2, -exitval => 0) if $help;
+
+__END__
+=head1 NAME
+
+Katon text replacement macroprocessor
+
+=head1 SYNOPSIS
+
+Katon is a text replacement macroprocessor. 
