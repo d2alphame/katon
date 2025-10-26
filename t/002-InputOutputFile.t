@@ -28,7 +28,7 @@ my $base_dir = create_files
 
 lives_ok {  $out = `bin/katon $base_dir/$file1`;
             die "$!" if $? >> 8;  } 
-        'Runs when given a file argument and does not die';
+        'Runs without dying when given a file argument';
 
 ok confirm_content($file1, $out), 
         'Echoes input file to stdout when no destination file is given';
