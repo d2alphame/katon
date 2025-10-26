@@ -37,7 +37,8 @@ dies_ok {   $out = `bin/katon non_existent_file.txt` ;
             die "$!" if($? >> 8) }
         'Dies when given a non-existent file argument';
 
-
+dies_ok { }
+    'Dies when '
 
 
 done_testing;

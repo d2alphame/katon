@@ -8,29 +8,49 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
 my $help = 0;
+my $dest = '';      # Destination file. Use --dest
 
+# First if nothing is passed on the command line, show summary and exit
+pod2usage(-verbose => 1, -exitval => 0) unless @ARGV;
 
 GetOptions(
-    'help|h' => \$help
+    'out|o=s'  => \$dest,
+    'help|h'    => \$help
 ) or pod2usage(2);
+
+# If no arguments are given, display summary and exit
+pod2usage(-verbose => 1, -exitval => 0) unless @ARGV;
+
+# Show help and exit if --help is passed in
 pod2usage(-verbose => 2, -exitval => 0) if $help;
 
+my $outfh;
+while(@ARGV) {
+    my $infile = shift @ARGV;
+    die "File '$infile' does not exist.\n" unless(-e $infile);
+    open my $infh, '<', $infile 
+        or die "Could not open input file '$infile': $!";
+    if($dest) {
+        $outfh = undef;
+        open $outfh, '>', $dest
+            or die "Could not open destination file '$dest': $!";
+    }
 
-# After 'GetOptions' processing, 
-# If no arguments are given, display summary and exit
-unless (@ARGV) { 
-    say "Katon text replacement macroprocessor";
-    exit 0;
+    while(my $line = <$infh>) {
+        if($outfh) {
+            print $outfh $line;
+        } else {
+            print $line;
+        }
+    }
 }
 
-# Take whatever is left as input file(s)
-for my $infile(@ARGV) {
-    exit 1  unless -e $infile;
-    die "File '$infile' does not exist.\n" unless(-e $infile); 
-}
+
+
 
 
 __END__
+
 =head1 NAME
 
 Katon text replacement macroprocessor
