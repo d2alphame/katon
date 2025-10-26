@@ -10,7 +10,7 @@ use Pod::Usage;
 my $help = 0;
 my $dest = '';      # Destination file. Use --dest
 
-# First if nothing is passed on the command line, show summary and exit
+# First, if nothing is passed on the command line, show summary and exit
 unless(@ARGV) {
     pod2usage
         -message => 'Katon is a text replacement macroprocessor.',
@@ -19,17 +19,16 @@ unless(@ARGV) {
         -sections => [ qw( USAGE ) ]
 }
 
-
 GetOptions(
-    'out|o=s'  => \$dest,
+    'out|o=s'   => \$dest,
     'help|h'    => \$help
-) or pod2usage(2);
+) or pod2usage(-verbose => 2, -exitval => 1);
 
 # If no arguments are given, display summary and exit
-pod2usage(-verbose => 1, -exitval => 0) unless @ARGV;
+pod2usage(-verbose => 1, -exitval => 0, -sectioin => [ 'USAGE' ]) unless @ARGV;
 
-# Show help and exit if --help is passed in
-pod2usage(-verbose => 2, -exitval => 0) if $help;
+# Show help and exit if --help or -h is passed in
+pod2usage(-verbose => 3, -exitval => 0) if $help;
 
 my $outfh;
 while(@ARGV) {
@@ -53,9 +52,6 @@ while(@ARGV) {
 }
 
 
-
-
-
 __END__
 
 =head1 NAME
@@ -64,11 +60,11 @@ Katon - a text replacement macroprocessor.
 
 =head1 SYNOPSIS
 
-At its simplest, katon echoes the content of a given file to STDOUT while
-substituting variables. The content of the source file is printed as-is if there
-are no variables in it to substitute.
-
-It is usefor text replacement in files much like C<sed>, C<envsubst>, C<m4>etc.
+At its simplest, katon echoes the content of a given file to another file while
+substituting variables. The output file can be specified using the --out (or -o)
+option. If an output file is not specified, the output will be printed to
+STDOUT. The content of the source file is printed as-is if there are no
+variables in it to substitute.
 
 =head1 USAGE
 
