@@ -12,18 +12,18 @@ use KatonTestUtils;
 
 my $out; 
 
-lives_ok { $out = `bin/katon` }
-                'Does not die';
+lives_ok { $out = `bin/katon` ; die "$!" if($? >> 8) }
+                'Does not die when run bare without arguments';
 
 like $out, qr/(K|k)aton is a text replacement macroprocessor/,
                 'Displays summary when no arguments are given';
 
-lives_ok { $out = `bin/katon --help` }
+lives_ok { $out = `bin/katon --help` ; die "$!" if($? >> 8) }
                 'Does not die when --help is given';
 
 ok $out, 'Has output when --help is given';
 
-lives_ok { $out = `bin/katon -h` }
+lives_ok { $out = `bin/katon -h` ; die "$!" if($? >> 8) }
                 'Does not die when -h is given';
 
 ok $out, 'Has output when -h is given';

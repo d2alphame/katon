@@ -11,7 +11,14 @@ my $help = 0;
 my $dest = '';      # Destination file. Use --dest
 
 # First if nothing is passed on the command line, show summary and exit
-pod2usage(-verbose => 1, -exitval => 0) unless @ARGV;
+unless(@ARGV) {
+    pod2usage
+        -message => 'Katon is a text replacement macroprocessor.',
+        -verbose => 99,
+        -exitval => 0, 
+        -sections => [ qw( USAGE ) ]
+}
+
 
 GetOptions(
     'out|o=s'  => \$dest,
@@ -53,8 +60,18 @@ __END__
 
 =head1 NAME
 
-Katon text replacement macroprocessor
+Katon - a text replacement macroprocessor.
 
 =head1 SYNOPSIS
 
-Katon is a text replacement macroprocessor. 
+At its simplest, katon echoes the content of a given file to STDOUT while
+substituting variables. The content of the source file is printed as-is if there
+are no variables in it to substitute.
+
+It is usefor text replacement in files much like C<sed>, C<envsubst>, C<m4>etc.
+
+=head1 USAGE
+
+    katon [options] source-file
+    katon source-file [options]
+    katon --help
