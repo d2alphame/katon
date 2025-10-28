@@ -1,4 +1,4 @@
-#! /usr/bin/env perl
+#! /usr/bin/perl
 
 use v5.34;
 use strict;
@@ -12,25 +12,30 @@ my $dest = '';      # Destination file. Use --out or -o for this
 
 # First, if nothing is passed on the command line, show summary and exit
 unless(@ARGV) {
-    pod2usage
-        -message => 'Katon is a text replacement macroprocessor.',
-        -verbose => 99,
-        -exitval => 0, 
-        -sections => [ qw( USAGE ) ]
+    say "Katon is a text replacement macroprocessor. Use --help or -h to get help.";
+    exit 0;
 }
 
 # Process command line options
 GetOptions(
     'out|o=s'   => \$dest,
     'help|h'    => \$help
-); #or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
-
-# If no arguments are left in @ARGV after processing options, that implies that
-# no source file was given. Show usage and exit.
-pod2usage(-verbose => 1, -exitval => 0, -section => [ 'USAGE' ]) unless @ARGV;
+) or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
 
 # Show help and exit if --help or -h is passed in
-pod2usage(-verbose => 99, -exitval => 0, -message => 'Katon is a text replacement macroprocessor') if $help;
+pod2usage(-verbose => 1, -exitval => 0) if $help;
+
+# If no arguments are left in @ARGV after processing options, that implies that no source file was given. Show usage and
+# exit.
+unless(@ARGV) {
+    pod2usage
+        -message => 'No source file specified.',
+        -verbose => 1,
+        -exitval => 1, 
+        -sections => [ qw( USAGE ) ]
+}
+
+
 
 my $outfh;
 while(@ARGV) {
@@ -58,9 +63,8 @@ __END__
 
 =head1 NAME
 
-Katon is a text replacement macroprocessor. It copies the content of a source
-file to an output file while substituting variables. It copies to STDOUT if no
-output file is specified.
+Katon is a text replacement macroprocessor. It copies the content of a source file to an output file while substituting
+variables. It copies to STDOUT if no output file is specified.
 
 
 =head1 SYNOPSIS
@@ -71,17 +75,9 @@ output file is specified.
     katon <source_file> --var 'VAR1=value1' --var 'VAR2=value2' --out <output_file>
 
 
-    Options:
-        --out, -o <file>    Specify output file. If not given, output is
-                            printed to STDOUT.
-        --help, -h          Show this help message and exit.
-
-
 =head1 DESCRIPTION
 
-At its simplest, katon echoes the content of a given file to another file while
-substituting variables. The output file can be specified using the --out (or -o)
-option. If an output file is not specified, the output will be printed to
-STDOUT. The content of the source file is printed as-is if there are no
-variables in it to substitute.
+At its simplest, katon echoes the content of a given file to another file while substituting variables. The output file
+can be specified using the --out (or -o) option. If an output file is not specified, the output will be printed to
+STDOUT. The content of the source file is printed as-is if there are no variables in it to substitute.
 
