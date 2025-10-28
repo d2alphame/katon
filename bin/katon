@@ -8,7 +8,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
 my $help = 0;
-my $dest = '';      # Destination file. Use --dest
+my $dest = '';      # Destination file. Use --out or -o for this
 
 # First, if nothing is passed on the command line, show summary and exit
 unless(@ARGV) {
@@ -19,16 +19,18 @@ unless(@ARGV) {
         -sections => [ qw( USAGE ) ]
 }
 
+# Process command line options
 GetOptions(
     'out|o=s'   => \$dest,
     'help|h'    => \$help
-) or pod2usage(-verbose => 2, -exitval => 1);
+); #or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
 
-# If no arguments are given, display summary and exit
-pod2usage(-verbose => 1, -exitval => 0, -sectioin => [ 'USAGE' ]) unless @ARGV;
+# If no arguments are left in @ARGV after processing options, that implies that
+# no source file was given. Show usage and exit.
+pod2usage(-verbose => 1, -exitval => 0, -section => [ 'USAGE' ]) unless @ARGV;
 
 # Show help and exit if --help or -h is passed in
-pod2usage(-verbose => 3, -exitval => 0) if $help;
+pod2usage(-verbose => 99, -exitval => 0, -message => 'Katon is a text replacement macroprocessor') if $help;
 
 my $outfh;
 while(@ARGV) {
@@ -56,9 +58,26 @@ __END__
 
 =head1 NAME
 
-Katon - a text replacement macroprocessor.
+Katon is a text replacement macroprocessor. It copies the content of a source
+file to an output file while substituting variables. It copies to STDOUT if no
+output file is specified.
+
 
 =head1 SYNOPSIS
+
+    katon <source_file>
+    katon <source_file> --out <output_file>
+    katon <source_file> --var-file <variables_file> --out <output_file>
+    katon <source_file> --var 'VAR1=value1' --var 'VAR2=value2' --out <output_file>
+
+
+    Options:
+        --out, -o <file>    Specify output file. If not given, output is
+                            printed to STDOUT.
+        --help, -h          Show this help message and exit.
+
+
+=head1 DESCRIPTION
 
 At its simplest, katon echoes the content of a given file to another file while
 substituting variables. The output file can be specified using the --out (or -o)
@@ -66,8 +85,3 @@ option. If an output file is not specified, the output will be printed to
 STDOUT. The content of the source file is printed as-is if there are no
 variables in it to substitute.
 
-=head1 USAGE
-
-    katon [options] source-file
-    katon source-file [options]
-    katon --help

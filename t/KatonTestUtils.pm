@@ -31,7 +31,7 @@ sub create_files {
 sub confirm_content {
     my ($filename, $expected) = @_;
     open my $fh, '<', "$temp_test_dir/$filename"
-        or die "Could not open file '$filename': $!"; 
+        or die "Could not open file $filename: $!"; 
     my $content = do { local $/; <$fh> };
     return 1 if $content eq $expected;
     return 0;   

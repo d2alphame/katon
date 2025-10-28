@@ -53,6 +53,14 @@ lives_ok {  $out = `bin/katon $base_dir/$file2 --out $base_dir/$outf1`;
             die "$!" if $? >> 8;  }
         'Does not die when --out is given with destination file name';
 
+if(-e "$base_dir/$outf1") { diag "The file exists: $base_dir/$outf1" };
+
+open my $f, '<', "$base_dir/$outf1"
+    or die "I cannot figure out why this won't open: $base_dir/$outf1: $!";
+
+ok confirm_content("$base_dir/$outf1", $out), 
+        'Echoes input file to specified destination file';
+
 lives_ok {  $out = `bin/katon $base_dir/$file3 -o $base_dir/$outf2`;
             die "$!" if $? >> 8;  }
         'Does not die when -o is given with destination file name';
