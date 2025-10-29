@@ -7,8 +7,10 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
+sub process_file($$);
 my $help = 0;
 my $dest = '';      # Destination file. Use --out or -o for this
+my %env;            # Environment variables that can be substituted
 
 # First, if nothing is passed on the command line, show summary and exit
 unless(@ARGV) {
@@ -35,25 +37,34 @@ unless(@ARGV) {
         -sections => [ qw( USAGE ) ]
 }
 
-
-
 my $outfh;
 while(@ARGV) {
     my $infile = shift @ARGV;
     die "File '$infile' does not exist.\n" unless(-e $infile);
     open my $infh, '<', $infile 
         or die "Could not open input file '$infile': $!";
+    
+
     if($dest) {
         $outfh = undef;
         open $outfh, '>', $dest
             or die "Could not open destination file '$dest': $!";
     }
 
-    while(my $line = <$infh>) {
-        if($outfh) {
-            print $outfh $line;
-        } else {
-            print $line;
+    process_file $infh, $outfh;
+}
+
+
+
+sub process_file($$){
+
+    my ($ifh, $ofh) = shift;
+    $ofh //= *STDOUT;
+
+    while(<$fh>) {
+        {
+            last           if /\G(?=$)/gc;        # Read next line if regex has reached the end of the line
+            print $ofh $1  if /\G([^\$]+)/gc;     # Print out normal text
         }
     }
 }
@@ -80,4 +91,18 @@ variables. It copies to STDOUT if no output file is specified.
 At its simplest, katon echoes the content of a given file to another file while substituting variables. The output file
 can be specified using the --out (or -o) option. If an output file is not specified, the output will be printed to
 STDOUT. The content of the source file is printed as-is if there are no variables in it to substitute.
+
+When substituting environment variables, only environment variables that begin with 'KT_' will be substituted. For
+example to substitute the environment variable 'SOME_VAR', set the environment variable KT_SOME_VAR and access it with
+$env.SOME_VAR.
+
+Set the environment variable KT_SOME_VAR and invoke C<katon>
+
+    KT_SOME_VAR="Some Value"
+    katon input_file
+
+In your input file, substitute the environment variable with:
+
+    $env.SOME_VAR
+
 
