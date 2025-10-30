@@ -9,6 +9,7 @@ use Pod::Usage;
 
 sub process_file($$);
 sub process_env();
+sub process_vars();
 
 my $help = 0;
 my $dest = '';      # Destination file. Use --out or -o for this
@@ -24,7 +25,8 @@ unless(@ARGV) {
 # Process command line options
 GetOptions(
     'out|o=s'   => \$dest,
-    'help|h'    => \$help
+    'help|h'    => \$help,
+    'var=s'     => \%vars
 ) or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
 
 # Show help and exit if --help or -h is passed in
@@ -41,6 +43,10 @@ unless(@ARGV) {
 }
 
 process_env;
+#process_vars;
+
+say "$_: $vars{$_}" for(keys %vars);
+
 
 my $outfh;
 while(@ARGV) {
@@ -89,6 +95,8 @@ sub process_env() {
         }
     }
 }
+
+
 
 __END__
 
