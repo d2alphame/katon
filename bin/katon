@@ -77,10 +77,10 @@ sub process_file($$) {
     while(<$ifh>) {
         /\G (?=$) /gcx and next;  # Lookahead for end of line and read next line if we reach it
 
-        /\G \$(\$+) /gcx                  && print $ofh $1       and redo;  # Use an extra $ to escape any number of $
-        /\G \$env\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $env{$1} and redo;  # Substitute environment variables
-        /\G \$var\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $var{$1} and redo;  # Substitute var variables
-        /\G (.+) /gcxs                    && print $ofh $1       and redo;  # Print normal text. /s includes newlines
+        /\G \$(\$+) /gcx                  && print $ofh $1        and redo;  # Use an extra $ to escape any number of $
+        /\G \$env\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $env{$1}  and redo;  # Substitute environment variables
+        /\G \$var\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $vars{$1} and redo;  # Substitute var variables
+        /\G ([^\$]+) /gcx                 && print $ofh $1        and redo;  # Print normal text.
     }
 }
 
