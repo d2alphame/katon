@@ -8,9 +8,12 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
 sub process_file($$);
+sub process_env();
+
 my $help = 0;
 my $dest = '';      # Destination file. Use --out or -o for this
 my %env;            # Environment variables that can be substituted
+my %vars;           # User-defined variables that can be substituted
 
 # First, if nothing is passed on the command line, show summary and exit
 unless(@ARGV) {
@@ -37,6 +40,8 @@ unless(@ARGV) {
         -sections => [ qw( USAGE ) ]
 }
 
+process_env;
+
 my $outfh;
 while(@ARGV) {
     my $infile = shift @ARGV;
@@ -60,26 +65,33 @@ while(@ARGV) {
 # and the second parameter the output or destination files.
 # It processes the content of the input file and prints the result to the output file.
 sub process_file($$) {
-
     my ($ifh, $ofh) = @_;
-
     $ofh //= *STDOUT;
 
-    while(<$ifh>) {
-        {
-            last           if /\G(?=$)/gc;        # Read next line if regex has reached the end of the line
-            print $ofh $1  if /\G([^\$]+)/gc;     # Print out normal text
-        }
-    }
+    # say for(keys %env);  # For debugging
+    # my $subst = sub {
+# 
+    # };
+    # while(<$ifh>) {
+    #     {
+    #         last           if /\G(?=$)/gc;        # Read next line if regex has reached the end of the line
+    #         /\G([^\$]+)/gc && print $ofh $env{$1} and redo;     # Print out normal text
+    #         $subst->()     if /\G\$env\.([A-Za-z0-9_-]+)/gc;
+    #     }
+    # }
 }
 
 
 
-# Process the environment variables. 
-sub process_env {
-    %env =  map  { ($_ => $ENV{$_}) }
-            grep { /^KT_/ }
-            keys %ENV
+# Process the environment variables. Katon only processes environment variables that begin with 'KT_'. The 'KT_' prefix
+# is stripped off so that the variable name becomes what comes after 'KT_'. For example, if you set the environment
+# variable name KT_SOME_VAR, it can be accessed in the input file as $env.SOME_VAR.
+sub process_env() {
+    while(my ($key, $value) = each %ENV){
+        if($key =~ s/^KT_//) {
+            $env{$key} = $value;
+        }
+    }
 }
 
 __END__
