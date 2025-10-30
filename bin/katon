@@ -40,11 +40,11 @@ unless(@ARGV) {
 my $outfh;
 while(@ARGV) {
     my $infile = shift @ARGV;
+
     die "File '$infile' does not exist.\n" unless(-e $infile);
     open my $infh, '<', $infile 
         or die "Could not open input file '$infile': $!";
     
-
     if($dest) {
         $outfh = undef;
         open $outfh, '>', $dest
@@ -56,12 +56,16 @@ while(@ARGV) {
 
 
 
-sub process_file($$){
+# This subroutine process_file() takes 2 parameters. The first parameter is the file handle of the input or source file
+# and the second parameter the output or destination files.
+# It processes the content of the input file and prints the result to the output file.
+sub process_file($$) {
 
-    my ($ifh, $ofh) = shift;
+    my ($ifh, $ofh) = @_;
+
     $ofh //= *STDOUT;
 
-    while(<$fh>) {
+    while(<$ifh>) {
         {
             last           if /\G(?=$)/gc;        # Read next line if regex has reached the end of the line
             print $ofh $1  if /\G([^\$]+)/gc;     # Print out normal text
@@ -69,6 +73,14 @@ sub process_file($$){
     }
 }
 
+
+
+# Process the environment variables. 
+sub process_env {
+    %env =  map  { ($_ => $ENV{$_}) }
+            grep { /^KT_/ }
+            keys %ENV
+}
 
 __END__
 
