@@ -28,7 +28,7 @@ GetOptions(
 ) or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
 
 # Show help and exit if --help or -h is passed in
-pod2usage(-verbose => 1, -exitval => 0) if $help;
+pod2usage(-verbose => 3, -exitval => 0) if $help;
 
 # If no arguments are left in @ARGV after processing options, that implies that no source file was given. Show usage and
 # exit.
@@ -71,21 +71,10 @@ sub process_file($$) {
     while(<$ifh>) {
         /\G (?=$) /gcx and next;  # Lookahead for end of line and read next line if we reach it
 
-        /\G \$(\$+) /gcx                  && print $ofh $1       and redo;  # Use extra an $ to escape any number of $
+        /\G \$(\$+) /gcx                  && print $ofh $1       and redo;  # Use an extra $ to escape any number of $
         /\G \$env\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $env{$1} and redo;  # Substitute environment variables
         /\G (.+) /gcxs                    && print $ofh $1       and redo;  # Print normal text. /s includes newlines
     }
-
-    # my $subst = sub {
-# 
-    # };
-    # while(<$ifh>) {
-    #     {
-    #         last           if /\G(?=$)/gc;        # Read next line if regex has reached the end of the line
-    #         /\G([^\$]+)/gc && print $ofh $env{$1} and redo;     # Print out normal text
-    #         $subst->()     if /\G\$env\.([A-Za-z0-9_-]+)/gc;
-    #     }
-    # }
 }
 
 
@@ -122,6 +111,23 @@ variables. It copies to STDOUT if no output file is specified.
 At its simplest, katon echoes the content of a given file to another file while substituting variables. The output file
 can be specified using the --out (or -o) option. If an output file is not specified, the output will be printed to
 STDOUT. The content of the source file is printed as-is if there are no variables in it to substitute.
+
+
+=head2 Escaping
+
+Use an extra C<$> sign to escape any number of dollar (C<$>) signs. If, for example, you want 3 dollar signs in your
+output, then use 4 C<$> like this
+
+    $$$$
+
+The above becomes
+
+    $$$
+
+in the output
+
+
+=head2 Substituting Environment Variables
 
 When substituting environment variables, only environment variables that begin with 'KT_' will be substituted. For
 example to substitute the environment variable 'SOME_VAR', set the environment variable KT_SOME_VAR and access it with
