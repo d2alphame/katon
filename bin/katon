@@ -68,7 +68,14 @@ sub process_file($$) {
     my ($ifh, $ofh) = @_;
     $ofh //= *STDOUT;
 
-    # say for(keys %env);  # For debugging
+    while(<$ifh>) {
+        /\G (?=$) /gcx and next;  # Lookahead for end of line and read next line if we reach it
+
+        /\G \$(\$+) /gcx                  && print $ofh $1       and redo;  # Use extra an $ to escape any number of $
+        /\G \$env\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $env{$1} and redo;  # Substitute environment variables
+        /\G (.+) /gcxs                    && print $ofh $1       and redo;  # Print normal text. /s includes newlines
+    }
+
     # my $subst = sub {
 # 
     # };
