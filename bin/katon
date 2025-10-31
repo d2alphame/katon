@@ -9,12 +9,13 @@ use Pod::Usage;
 
 sub process_file($$);
 sub process_env();
-sub process_vars();
+sub process_var_file($);
 
 my $help = 0;
 my $dest = '';      # Destination file. Use --out or -o for this
 my %env;            # Environment variables that can be substituted
 my %vars;           # User-defined variables that can be substituted
+my $var_file = '';  # Variable file. --var-file option
 
 # First, if nothing is passed on the command line, show summary and exit
 unless(@ARGV) {
@@ -26,14 +27,15 @@ unless(@ARGV) {
 GetOptions(
     'out|o=s'   => \$dest,
     'help|h'    => \$help,
-    'var=s'     => \%vars
+    'var=s'     => \%vars,
+    'var-file=s'=> \$var_file
 ) or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
 
 # Show help and exit if --help or -h is passed in
 pod2usage(-verbose => 3, -exitval => 0) if $help;
 
 # If no arguments are left in @ARGV after processing options, that implies that no source file was given. Show usage and
-# exit.
+# exit with error.
 unless(@ARGV) {
     pod2usage
         -message => 'No source file specified.',
@@ -43,10 +45,7 @@ unless(@ARGV) {
 }
 
 process_env;
-#process_vars;
-
-say "$_: $vars{$_}" for(keys %vars);
-
+process_var_file($var_file) if $var_file;
 
 my $outfh;
 while(@ARGV) {
@@ -97,6 +96,67 @@ sub process_env() {
 }
 
 
+# Process variables passed in variable files. The file is passed in as the value of the --var-file option. The variable
+# file's format is a subset of the Derml format. See the Derml documentation at https://github.com/d2alphame/derml
+sub process_var_file($) {
+    my $file = shift;
+    die "Variable file $file does not exist.\n" unless(-e $file);
+    open my $handle , '<', $file
+        or die "Could not open variable file $file: $!";
+
+    while(<$handle>) {
+
+        next if /\G \s* \#.* $ /gcx;           # Skip comments
+        next if /\G \s* $/x;                    # Skip blank lines
+        
+        # Get ready to get a variable assignment
+        if(/ \G \s* ([A-Za-z0-9\._-]+) \s+/gcx) {
+            my $var_name = $1;
+
+            # Standard values assigned with '='
+            if(/\G = \s+ /gcx) {
+                # Quoted with double quotes
+                if(/\G " ([^"]+) " /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+                # Quoted with single quotes
+                elsif(/\G ' ([^']+) ' /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+                # Quoted with backticks
+                elsif(/\G ` ([^`]+) ` /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+                # Quoted with parens
+                elsif(/\G \( ([^)]+) \) /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+                # Quoted with braces
+                elsif(/\G \{ ([^}]+) \} /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+                # Quoted with angles
+                elsif(/\G < ([^>]+) > /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+                # Quoted with squares
+                elsif(/\G \[ ([^\]]+) \] /gcx) {
+                    $vars{$var_name} = $1;
+                    redo;
+                }
+            }
+        }
+
+    }
+
+    say " Var $_ => $vars{$_}" for keys %vars;
+}
 
 __END__
 
@@ -167,3 +227,6 @@ can be accessed from the source file as C<var.variable_name>.
     katon input_file --var first=alpha --var second=beta --var third=gamma
 
 These variables can be substituted with C<var.first>, C<var.second>, and C<var.third>.
+
+
+=head2 A Primer on Derml
