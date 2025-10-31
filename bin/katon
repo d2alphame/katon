@@ -75,8 +75,7 @@ sub process_file($$) {
     $ofh //= *STDOUT;
 
     while(<$ifh>) {
-        /\G (?=$) /gcx and next;  # Lookahead for end of line and read next line if we reach it
-
+        /\G \n /gcx                       && print "\n"           and next;  # Newline means end of the line
         /\G \$(\$+) /gcx                  && print $ofh $1        and redo;  # Use an extra $ to escape any number of $
         /\G \$env\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $env{$1}  and redo;  # Substitute environment variables
         /\G \$var\.([a-zA-Z0-9_-]+) /gcx  && print $ofh $vars{$1} and redo;  # Substitute var variables
