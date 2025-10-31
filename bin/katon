@@ -124,8 +124,8 @@ STDOUT. The content of the source file is printed as-is if there are no variable
 
 =head2 Escaping
 
-Use an extra C<$> sign to escape any number of dollar (C<$>) signs. If, for example, you want 3 dollar signs in your
-output, then use 4 C<$> like this
+Use an extra C<$> sign to escape any number of dollar (C<$>) signs. To substitute 3 dollar signs, for example, use 4 as
+in:
 
     $$$$
 
@@ -147,8 +147,16 @@ Set the environment variable KT_SOME_VAR and invoke C<katon>
     KT_SOME_VAR="Some Value"
     katon input_file
 
-In your input file, substitute the environment variable with:
+In the input file, substitute the environment variable with:
 
     $env.SOME_VAR
 
 
+=head2 Substituting C<--var> Variables
+
+Multiple C<--var> options can be specified from the command line using the C<variable=value> format. These variables
+can be accessed from the source file as C<var.variable_name>.
+
+    katon input_file --var first=alpha --var second=beta --var third=gamma
+
+These variables can be substituted with C<var.first>, C<var.second>, and C<var.third>.
