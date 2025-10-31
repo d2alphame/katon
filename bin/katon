@@ -132,7 +132,15 @@ The above becomes
 
     $$$
 
-in the output
+in the output.
+
+This means to output n dollar signs, use n+1 dollar signs in the input. To output 5 dollar signs, use 6 as in:
+
+    $$$$$$
+
+The output will be
+
+    $$$$$
 
 
 =head2 Substituting Environment Variables
