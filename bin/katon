@@ -175,6 +175,45 @@ sub process_var_file($) {
                 $vars{$var_name} = $long_value;
                 next;
             }
+            # Multiline values assigned with | and a delimiting string. The delimiting string must contain at least 1
+            # non-whitespace character. The lone delimiter on a line and possibly surrounded by spaces marks the end
+            # of the value
+            elsif(/\G \| \s+ (\S.*) $ /gcx) {
+                my $delim = $1;
+                my $multiline_value = '';
+                while(1) {
+                    last if eof;
+                    $_ = <$handle>;
+                    last if /^ \s* $delim \s* $/x;
+                    s/^\s*//;
+                    $multiline_value .= $_;
+                }
+                $vars{$var_name} = $multiline_value;
+                next;
+            }
+            # "Pythonic values assigned with >". This basically just lets you assign some pythonish or yaml-like code
+            # to a variable
+            elsif(/\G > \s+ (\S.*) $ /gcx) {
+                my $delim = $1;
+                my $pythonic_value = '';
+                $_ = <$handle>;
+                my $indent_level = length $1 if s/^ (\s*) //x;
+                $pythonic_value .= $_;
+                while(1) {
+                    last if eof;
+                    $_ = <$handle>;
+                    last if /^ \s* $delim \s* $/x;
+                    if(s/^\s{$indent_level}//) { 
+                        $pythonic_value .= $_;
+                        next
+                    }
+                    else {
+                        # TODO: Error out
+                        die "Syntax error in file\n";
+                    }
+                }
+                $vars{$var_name} =  $pythonic_value;
+            }
         }
 
     }
