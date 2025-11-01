@@ -293,3 +293,40 @@ These variables can be substituted with C<var.first>, C<var.second>, and C<var.t
 
 
 =head2 A Primer on Derml
+
+Katon uses a subset of Derml. Variable names can be any combination of letters (upper case and lower case), numbers,
+dots (the period characters), dashes and underscores. Comments start with the hash symbol (#) continue on to the end of
+the line.
+
+    # This is a comment
+
+Values can be quoted or unquoted. Values may also span multiple lines. There are 7 quoting mechanisms, they are: double
+quotes ("), apostrophe ('), backticks (`), parentheses (()), braces ({}), angular brackets (<>), and square brackets
+([]). All assignment operators I<must always> be surrounded by spaces. Assignments with unquoted values cannot have
+inlined comments as Derml will take the comment as part of the value.
+
+    # This is an assignment with an unquoted value
+    Show = Avatar the Last Airbender
+
+    # Comments cannot be inlined for unquoted value assignments
+    main_character = Aang         # Derml will think this comment is part of the value
+
+    # There's always spaces around assignment operators. The following, for example, would be wrong
+    LoveInterest=Katara
+    r_o_l_e= Protagonist
+    Bending-Element =Air
+
+The last 3 assignments in the previous example are wrong because there are no spaces around the assignment operator.
+
+The following are examples with quoted values. Quoted assignments may have inlined comments.
+
+    Air   = "Aang"
+    Fire  = 'Roku'     # Inlined comment can be added to quoted values
+    Earth = `Kyoshi`   # This one is quoted with back ticks
+    Water = (Kuruk)    # This one is quoted using parenthesis
+
+    Person.dir = <C:\Users\Boomerang User\Sokka>  # Angular backets for quotes
+    best-sokkasm = {Sokka said "Looks like Long Feng is Long gone"}
+    Ep1s0d3_M41n_point = [It's Azula's breakdown]
+
+
