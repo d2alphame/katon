@@ -27,10 +27,10 @@ unless(@ARGV) {
 
 # Process command line options
 GetOptions(
-    'out|o=s'   => \$dest,
-    'help|h'    => \$help,
-    'var=s'     => \%vars,
-    'var-file=s'=> \$var_file
+    'out|o=s'    => \$dest,
+    'help|h'     => \$help,
+    'var=s'      => \%vars,
+    'var-file=s' => \$var_file
 ) or pod2usage(-verbose => 1, -exitval => 1, -section => [ 'USAGE' ]);
 
 # Show help and exit if --help or -h is passed in
@@ -225,7 +225,9 @@ sub process_var_file($) {
     }
 }
 
+
 __END__
+
 
 =head1 NAME
 
@@ -239,6 +241,22 @@ variables. It copies to STDOUT if no output file is specified.
     katon <source_file> --out <output_file>
     katon <source_file> --var-file <variables_file> --out <output_file>
     katon <source_file> --var 'VAR1=value1' --var 'VAR2=value2' --out <output_file>
+
+
+=head1 OPTIONS
+
+-h --help
+    Shows a brief help system and exits.
+
+-o --output
+    Specifies the output file. If not specified, katon prints to the STDOUT.
+
+-v --var
+    Specifies variables from the command line that can be subsituted. Multiple C<--v> options can be used for multiple
+    variables.
+
+--var-file
+    Specify a file (in Derml format) that contains variables to be substituted.
 
 
 =head1 DESCRIPTION
