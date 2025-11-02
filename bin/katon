@@ -333,4 +333,24 @@ The following are examples with quoted values. Quoted assignments may have inlin
     best-sokkasm = {Sokka said "Looks like Long Feng is Long gone"}
     Ep1s0d3_M41n_point = [It's Azula's breakdown]
 
+If a value is too long to fit on a single line, assign it with < symbol and start the long value on the immmediate next
+line. Note the whitespace before the < sign. The long value ends on a blank line.
+
+    this_long_value <
+        I want to say
+        this value is
+        really, really,
+        really long.
+        Too long, in
+        fact, to fit on
+        a single line
+
+End the long value on a blank line.
+
+
+
+
+
+
+
 
