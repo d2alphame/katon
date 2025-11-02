@@ -4,6 +4,8 @@ use v5.34;
 use strict;
 use warnings;
 
+use threads;
+use threads::shared;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
@@ -14,7 +16,7 @@ sub process_var_file($);
 my $help = 0;
 my $dest = '';      # Destination file. Use --out or -o for this
 my %env;            # Environment variables that can be substituted
-my %vars;           # User-defined variables that can be substituted
+my %vars :shared;   # User-defined variables that can be substituted
 my $var_file = '';  # Variable file. --var-file option
 
 # First, if nothing is passed on the command line, show summary and exit
@@ -45,7 +47,11 @@ unless(@ARGV) {
 }
 
 process_env;
-process_var_file($var_file) if $var_file;
+
+my $process_var_file_thread;
+if($var_file) {
+    $process_var_file_thread = threads->create(\&process_var_file, $var_file)
+}
 
 my $outfh;
 while(@ARGV) {
@@ -61,6 +67,7 @@ while(@ARGV) {
             or die "Could not open destination file '$dest': $!";
     }
 
+    $process_var_file_thread->join;
     process_file $infh, $outfh;
 }
 
@@ -215,10 +222,7 @@ sub process_var_file($) {
                 $vars{$var_name} =  $pythonic_value;
             }
         }
-
     }
-
-    say " Var $_ => $vars{$_}" for keys %vars;
 }
 
 __END__
