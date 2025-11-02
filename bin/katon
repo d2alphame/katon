@@ -347,10 +347,26 @@ line. Note the whitespace before the < sign. The long value ends on a blank line
 
 End the long value on a blank line.
 
+Multiline values are assigned by using the pipe (|) symbol followed by a delimiter. The delimiter on its own and
+possibly surrounded by spaces ends the multiline value. All initial spaces in all lines of the value will be stripped
+off so it becomes a left-aligned paragraph. Here's an example:
 
+    1st-love-song | End-Of-Song
+        It's long, long way to Ba Sing Se
+        And girls in the city
+        They're so pretty
+    End-Of-Song
 
+Note the whitespace around the pipe (|).
 
+There's also pythonic values which allows the assignment of pythonic or yaml-like values. Relative indentation is
+preserved. The amount of indentation on stripped off is the amount of indentation on the first line of the value. This
+maintains the shape of value. Assign this value with the > symbol. Specify a delimiting string after the > and start the
+value immediately on the following line. The > symbol must be surrounded by spaces and the value ends on a line with the
+delimiting string alone and possible surrounded by spaces, e.g.
 
-
-
-
+    somePython.Code- > eof
+        def some_code():
+            name = input("What is your name")
+            print("Hello " + "name")
+        eof
