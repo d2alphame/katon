@@ -259,6 +259,29 @@ variables. It copies to STDOUT if no output file is specified.
     Specify a file (in Derml format) that contains variables to be substituted.
 
 
+=head1 EXAMPLES
+
+Running katon without any options would print out information about katon. 
+
+    katon
+
+Use C<-h> or C<--help> to get help.
+
+    katon -h
+    katon --help
+
+Specify a source file to carry out substitution in the source file. The following example uses a file named
+C<source.txt> as its source text file. If the file has variables in it to be substituted, the substitution will be done.
+
+    katon source.txt
+
+In the above example, since a --out (or C<-o>) was not specified, the resulting text is printed to STDOUT. In the
+following example, the resulting text (with the variables substituted) goes to output.txt as specified by the C<--out>
+option.
+
+
+
+
 =head1 DESCRIPTION
 
 At its simplest, katon echoes the content of a given file to another file while substituting variables. The output file
