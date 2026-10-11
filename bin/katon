@@ -8,6 +8,7 @@ use threads;
 use threads::shared;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
+use IO::Select;
 
 sub process_file($$);
 sub process_env();
@@ -20,7 +21,7 @@ my $interactive;    # Interactive mode
 
 # To hold the value of the timeout option. I'm setting this because someone might mistakenly use katon in interactive
 # mode in an automated pipeline. Timeout prevents the pipeline from hanging forever waiting for user input.
-my $timeout = 10;
+my $timeout = 60;
 
 my %env;            # Environment variables that can be substituted
 my %vars :shared;   # User-defined variables that can be substituted
@@ -44,7 +45,7 @@ GetOptions(
 # Show help and exit if --help or -h is passed in
 pod2usage(-verbose => 3, -exitval => 0) if $help;
 
-interactive_mode if $interactive;
+my $stdin_buffer = interactive_mode if($interactive);
 
 # If no arguments are left in @ARGV after processing options, that implies that no source file was given. Show usage and
 # exit with error.
@@ -85,8 +86,10 @@ while(@ARGV) {
 sub interactive_mode() {
     open my $tty_out, '>', '/dev/tty' or die "Could not open terminal output for interactive mode: $!\n";
     print $tty_out <<~"EO-TTY-HEADER";
-    Katon version 1.0 Interactive CLI.
-    Press Ctrl+D when you're done.
+    Katon version 1.0.
+    Enter lines of text you want katon to process.
+    Press Ctrl+D on an empty line when you're done.
+    Or press Ctrl+D twice on a non-empty line when you're done.
     Exits after $timeout seconds without input.
 
     EO-TTY-HEADER
@@ -94,8 +97,18 @@ sub interactive_mode() {
 
     open my $tty_in, '<', '/dev/tty' or die "Could not open terminal input for interactive mode: $!\n";
     my $sel = IO::Select->new($tty_in);
-    
-
+    my $buffer = "";
+    while(1) {
+        unless ($sel->can_read($timeout)) {
+            print STDERR "\nKaton: no input for $timeout seconds, giving up.\n";
+            exit 124;
+        }
+        my $n = sysread($tty_in, $buffer, 4096, length $buffer);
+        die "Could not read from terminal: $!\n" unless defined $n;
+        last if $n == 0;          # EOF (Ctrl+D, or the pipe closed)
+    }
+    print "Got from buffer: $buffer";
+    return $buffer;
     exit 0;
 }
 
