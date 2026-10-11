@@ -28,10 +28,12 @@ my %env;            # Environment variables that can be substituted
 my %vars :shared;   # User-defined variables that can be substituted
 my $var_file = '';  # Variable file. --var-file option
 
-# First, if nothing is passed on the command line, show summary and exit
+# First, if nothing is passed on the command line, and there's no piped or redirected STDIN then show summary and exit
 unless(@ARGV) {
-    say "Katon is a text replacement macroprocessor. Use --help or -h to get help.";
-    exit 0;
+    unless(-p STDIN || -f STDIN) {
+        say "Katon is a text replacement macroprocessor. Use --help or -h to get help.";
+        exit 0;
+    }
 }
 
 # Process command line options
@@ -47,7 +49,7 @@ GetOptions(
 pod2usage(-verbose => 3, -exitval => 0) if $help;
 
 # The $interactive_buffer variable holds the data the user entered interactively.
-my $interactive_buffer = interactive_mode if($interactive);
+my $interactive_buffer = $interactive ? interactive_mode : '';
 
 # If no arguments are left in @ARGV after processing options, that implies that no source file was given. Show usage and
 # exit with error.
