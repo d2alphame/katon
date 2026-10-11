@@ -12,6 +12,7 @@ use IO::Select;
 
 sub process_file($$);
 sub process_env();
+sub process_interactive();
 sub process_var_file($);
 sub interactive_mode();
 
@@ -45,11 +46,12 @@ GetOptions(
 # Show help and exit if --help or -h is passed in
 pod2usage(-verbose => 3, -exitval => 0) if $help;
 
-my $stdin_buffer = interactive_mode if($interactive);
+# The $interactive_buffer variable holds the data the user entered interactively.
+my $interactive_buffer = interactive_mode if($interactive);
 
 # If no arguments are left in @ARGV after processing options, that implies that no source file was given. Show usage and
 # exit with error.
-unless(@ARGV) {
+unless(@ARGV || $interactive) {
     pod2usage
         -message => 'No source file specified.',
         -verbose => 1,
@@ -58,6 +60,7 @@ unless(@ARGV) {
 }
 
 process_env;
+process_interactive;
 
 my $process_var_file_thread;
 if($var_file) {
@@ -107,9 +110,7 @@ sub interactive_mode() {
         die "Could not read from terminal: $!\n" unless defined $n;
         last if $n == 0;          # EOF (Ctrl+D, or the pipe closed)
     }
-    print "Got from buffer: $buffer";
     return $buffer;
-    exit 0;
 }
 
 # This subroutine process_file() takes 2 parameters. The first parameter is the file handle of the input or source file
@@ -141,6 +142,10 @@ sub process_env() {
     }
 }
 
+sub process_interactive() {
+    $interactive_buffer =~ s/\$env\.([a-zA-Z_][a-zA-Z0-9_]*)/$env{$1}/g;
+    print $interactive_buffer;
+}
 
 # Process variables passed in variable files. The file is passed in as the value of the --var-file option. The variable
 # file's format is a subset of the Derml format. See the Derml documentation at https://github.com/d2alphame/derml
